@@ -1,4 +1,46 @@
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: areeb_backend
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-change-me}
+      REDIS_URL: redis://redis:6379
+      PG_HOST: postgres
+      PG_DB_NAME: areeb_db
+      PG_USER: test
+      PG_PASSWORD: test
+      PG_PORT: 5432
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - areeb_network
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    container_name: areeb_migrate
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://test:test@postgres:5432/areeb_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["bun", "drizzle-kit", "push"]
+    networks:
+      - areeb_network
+
   postgres:
     image: postgres:15-alpine
     container_name: areeb_pg
@@ -15,25 +57,30 @@ services:
     ports:
       # Try using this IP to connect in pgadmin4 172.26.0.2
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d areeb_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - areeb_network
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: areeb_pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    networks:
-      - areeb_network
-    depends_on:
-      - postgres
+  # pgadmin:
+  # image: dpage/pgadmin4
+  # container_name: areeb_pgadmin
+  # restart: unless-stopped
+  # environment:
+  #   PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #   PGADMIN_DEFAULT_PASSWORD: admin
+  #   PGADMIN_CONFIG_SERVER_MODE: "False"
+  # volumes:
+  #   - pgadmin_data:/var/lib/pgadmin
+  # ports:
+  #   - "5050:80"
+  # networks:
+  #   - areeb_network
+  # depends_on:
+  #   - postgres
 
   redis:
     image: redis:latest
@@ -50,4 +97,5 @@ volumes:
 
 networks:
   areeb_network:
+    name: areeb_network
     driver: bridge
