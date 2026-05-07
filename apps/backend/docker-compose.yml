@@ -41,6 +41,22 @@ services:
     networks:
       - areeb_network
 
+  seed:
+    image: postgres:15-alpine
+    container_name: areeb_seed
+    restart: "no"
+    environment:
+      PGPASSWORD: test
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      ["sh", "-c", "psql -h postgres -U test -d areeb_db -f /seed/seed.sql"]
+    volumes:
+      - ./database/schema/seed.sql:/seed/seed.sql:ro
+    networks:
+      - areeb_network
+
   postgres:
     image: postgres:15-alpine
     container_name: areeb_pg

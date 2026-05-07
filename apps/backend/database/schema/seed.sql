@@ -11,6 +11,21 @@ VALUES
         'admin@example.com', -- This will be userId = 2
         '$2b$10$vrm.HscDcNInNDvHqZ4zRu8wuZu3TA482Y5/m4FbC5no27lP3mBLO',
         'ADMIN'
+    ),
+    (
+        'user2@example.com',
+        '$2b$10$vrm.HscDcNInNDvHqZ4zRu8wuZu3TA482Y5/m4FbC5no27lP3mBLO',
+        'USER'
+    ),
+    (
+        'user3@example.com',
+        '$2b$10$vrm.HscDcNInNDvHqZ4zRu8wuZu3TA482Y5/m4FbC5no27lP3mBLO',
+        'USER'
+    ),
+    (
+        'admin2@example.com',
+        '$2b$10$vrm.HscDcNInNDvHqZ4zRu8wuZu3TA482Y5/m4FbC5no27lP3mBLO',
+        'ADMIN'
     );
 
 -- Insert events (total 20)
